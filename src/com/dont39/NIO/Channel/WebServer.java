@@ -16,12 +16,17 @@ public class WebServer {
             ssc.socket().bind(new InetSocketAddress("127.0.0.1", 8000));
             SocketChannel socketChannel = ssc.accept();
 
-            ByteBuffer readBuffer = ByteBuffer.allocate(128);
-            socketChannel.read(readBuffer); // 从channel？中读取数据后放入buffer中
+            ByteBuffer[] bufferArray = {ByteBuffer.allocate(128), ByteBuffer.allocate(16)}; // 用于Scatter
 
-            readBuffer.flip(); // 反转buffer用于读取
-            while (readBuffer.hasRemaining()) {
-                System.out.println((char)readBuffer.get());
+            socketChannel.read(bufferArray); // 从channel？中读取数据后放入bufferArray中
+
+            // 所有buffer都反转，然后读取，这里的实现仅限这个WebClient不会出问题。
+            for (ByteBuffer buffer :
+                    bufferArray) {
+                buffer.flip();
+                while (buffer.hasRemaining()) {
+                    System.out.println((char)buffer.get());
+                }
             }
 
             socketChannel.close();
